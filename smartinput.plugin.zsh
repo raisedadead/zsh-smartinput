@@ -13,9 +13,9 @@ function __smartinput:widget:input_left_bracket {
     :
   else
     local rule
-    for rule in $__smartinput_rules; do
-      if [[ $#rule == 2 && "$rule[1]" == "$KEYS" ]]; then
-        RBUFFER="$rule[2]$RBUFFER"
+    for rule in "${__smartinput_rules[@]}"; do
+      if [[ "${#rule}" == 4 && "${rule:0:1}" == "$KEYS" ]]; then
+        RBUFFER="${rule:2:1}$RBUFFER"
         break
       fi
     done
@@ -24,7 +24,6 @@ function __smartinput:widget:input_left_bracket {
 }
 
 function __smartinput:widget:input_right_bracket {
-  local left right
   if [[ "$RBUFFER[1]" == "$KEYS" ]]; then
     # [xxxxxx|]<right bracket key>
     zle forward-char
@@ -41,7 +40,7 @@ function __smartinput:widget:input_quote {
     # 'xxxxxx|'<quote key>
     zle forward-char
     return
-  elif [[ "$KEYS" == "'" && "'$LBUFFER[-1]" =~ '\w' ]]; then
+  elif [[ "$KEYS" == "'" && "$LBUFFER" =~ '[[:word:]]$' ]]; then
     # Support English "someone's"
     :
   else
@@ -51,54 +50,47 @@ function __smartinput:widget:input_quote {
 }
 
 function __smartinput:widget:backward_delete_char {
-  local rule left right
-  for rule in $__smartinput_rules; do
-    if [[ $#rule == 1 ]]; then
+  local left right matched_pair=false
+  # Iterate over the rules to find if there's a matched pair for deletion
+  for rule in "${__smartinput_rules[@]}"; do
+    if [[ "${#rule}" == 1 ]]; then
       left="$rule"
       right="$rule"
-    elif [[ $#rule == 2 ]]; then
-      left="$rule[1]"
-      right="$rule[2]"
+    elif [[ "${#rule}" == 4 ]]; then
+      left="${rule:0:1}"
+      right="${rule:2:1}"
     else
-      # Not Support rule
+      # Not a valid rule
       continue
     fi
 
-    # [|]<BS>
     if [[ "$LBUFFER[-1]" == "$left" && "$RBUFFER[1]" == "$right" ]]; then
-      zle backward-delete-char
-      zle delete-char
-      return
-    fi
-
-    # []|<BS>
-    if [[ "$LBUFFER[-2,-1]" == "$left$right" ]]; then
-      zle backward-delete-char
-      zle backward-delete-char
-      return
+      matched_pair=true
+      break
     fi
   done
 
-  zle backward-delete-char
+  if $matched_pair; then
+    zle backward-delete-char
+    zle delete-char
+  else
+    zle backward-delete-char
+  fi
 }
 
-() {
-  zle -N __smartinput:widget:input_quote
-  zle -N __smartinput:widget:input_left_bracket
-  zle -N __smartinput:widget:input_right_bracket
-  local rule
-  for rule in $__smartinput_rules; do
-    if [[ $#rule == 1 ]]; then
-      # quote
-      bindkey "$rule" __smartinput:widget:input_quote
-    elif [[ $#rule == 2 ]]; then
-      # brackets
-      bindkey "$rule[1]" __smartinput:widget:input_left_bracket
-      bindkey "$rule[2]" __smartinput:widget:input_right_bracket
-    fi
-  done
+zle -N __smartinput:widget:input_left_bracket
+zle -N __smartinput:widget:input_right_bracket
+zle -N __smartinput:widget:input_quote
+zle -N __smartinput:widget:backward_delete_char
+bindkey "^H" __smartinput:widget:backward_delete_char
+bindkey "^?" __smartinput:widget:backward_delete_char
 
-  zle -N __smartinput:widget:backward_delete_char
-  bindkey "^H" __smartinput:widget:backward_delete_char
-  bindkey "^?" __smartinput:widget:backward_delete_char
-}
+local rule
+for rule in "${__smartinput_rules[@]}"; do
+  if [[ "${#rule}" == 1 ]]; then
+    bindkey "$rule" __smartinput:widget:input_quote
+  elif [[ "${#rule}" == 4 ]]; then
+    bindkey "${rule:0:1}" __smartinput:widget:input_left_bracket
+    bindkey "${rule:2:1}" __smartinput:widget:input_right_bracket
+  fi
+done

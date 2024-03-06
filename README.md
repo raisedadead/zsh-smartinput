@@ -1,15 +1,17 @@
 # zsh-smartinput
+
 This is a zsh plugin to provided smart input.
 When brackets/quotes are inputted, the corresponding brackets/quotes are automatically inputted.
-Support character is ` () `, ` [] `, ` {} `, ` " `, ` ' ` and `` ` ``.
+Support character is `()`, `[]`, `{}`, `"`, `'` and `` ` ``.
 
 This plugin consulted [vim-smartinput](http://github.com/kana/vim-smartinput).
 
 # Installation
+
 ### Using [zplug](https://github.com/b4b4r07/zplug)
 
 ```zsh
-zplug "momo-lab/zsh-smartinput"
+zplug "raisedadead/zsh-smartinput"
 ```
 
 ### Manually
@@ -17,7 +19,7 @@ zplug "momo-lab/zsh-smartinput"
 Clone this repository somewhere (`~/.zsh-smartinput` for example) and source it in your `.zshrc`
 
 ```zsh
-git clone https://github.com/momo-lab/zsh-smartinput.git
+git clone https://github.com/raisedadead/zsh-smartinput.git
 ```
 
 ```zsh
@@ -31,37 +33,37 @@ This plugin provides the following rules
 
 Automatically complements the corresponding brackets/quotes:
 
-| Before | Input  | After  |
-|--------|--------|--------|
-| #      | (      | (#)    |
-| #      | [      | [#]    |
-| #      | {      | {#}    |
-| #      | "      | "#"    |
-| #      | '      | '#'    |
-| #      | \`     | \`#\`  |
+| Before | Input | After |
+| ------ | ----- | ----- |
+| #      | (     | (#)   |
+| #      | [     | [#]   |
+| #      | {     | {#}   |
+| #      | "     | "#"   |
+| #      | '     | '#'   |
+| #      | \`    | \`#\` |
 
 Input right brackets/quotes to leave the block:
 
-| Before | Input  | After  |
-|--------|--------|--------|
-| (#)    | )      | ()#    |
-| (foo#) | )      | (foo)# |
+| Before | Input | After  |
+| ------ | ----- | ------ |
+| (#)    | )     | ()#    |
+| (foo#) | )     | (foo)# |
 
 Input the backspace key to remove the corresponding brackets/quotes:
 
-| Before | Input  | After  |
-|--------|--------|--------|
-| (#)    | \<BS\> | #      |
-| ()#    | \<BS\> | #      |
+| Before | Input  | After |
+| ------ | ------ | ----- |
+| (#)    | \<BS\> | #     |
+| ()#    | \<BS\> | #     |
 
 Care to escaping characters:
 
-| Before | Input  | After  |
-|--------|--------|--------|
-| \\#    | (      | \\(#   |
+| Before | Input | After |
+| ------ | ----- | ----- |
+| \\#    | (     | \\(#  |
 
 Care to English words:
 
-| Before | Input  | After  |
-|--------|--------|--------|
-| foo#   | 's     | foo's# |
+| Before | Input | After  |
+| ------ | ----- | ------ |
+| foo#   | 's    | foo's# |
