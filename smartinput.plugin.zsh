@@ -8,6 +8,12 @@ declare -g __smartinput_rules=(
 )
 
 function __smartinput:widget:input_left_bracket {
+  # Skip if previous char is backslash
+  if [[ "$LBUFFER[-1]" == '\\' ]]; then
+    zle self-insert
+    return
+  fi
+
   case "$KEYS" in
   "[")
     RBUFFER="]$RBUFFER"
@@ -23,6 +29,13 @@ function __smartinput:widget:input_left_bracket {
 }
 
 function __smartinput:widget:input_right_bracket {
+  # Skip if previous char is backslash
+  if [[ "$LBUFFER[-1]" == '\\' ]]; then
+    zle self-insert
+    return
+  fi
+
+  # If next char matches, just move forward
   if [[ "$RBUFFER[1]" == "$KEYS" ]]; then
     zle forward-char
     return
@@ -31,20 +44,38 @@ function __smartinput:widget:input_right_bracket {
 }
 
 function __smartinput:widget:input_quote {
+  # Skip if previous char is backslash
   if [[ "$LBUFFER[-1]" == '\\' ]]; then
+    zle self-insert
     return
-  elif [[ "$RBUFFER[1]" == "$KEYS" ]]; then
+  fi
+
+  # If next char matches, just move forward
+  if [[ "$RBUFFER[1]" == "$KEYS" ]]; then
     zle forward-char
     return
-  elif [[ "$KEYS" == "'" && "$LBUFFER" =~ [[:alnum:]]$ ]]; then
-    return
-  else
-    RBUFFER="$KEYS$RBUFFER"
   fi
+
+  # For single quotes, check if we're in a word
+  if [[ "$KEYS" == "'" ]]; then
+    if [[ "$LBUFFER" =~ '[[:alnum:]]$' ]]; then
+      zle self-insert
+      return
+    fi
+  fi
+
+  # Add matching quote
+  RBUFFER="$KEYS$RBUFFER"
   zle self-insert
 }
 
 function __smartinput:widget:backward_delete_char {
+  # Skip if previous char is backslash
+  if [[ "$LBUFFER[-1]" == '\\' ]]; then
+    zle backward-delete-char
+    return
+  fi
+
   local left right matched_pair=false
   for rule in "${__smartinput_rules[@]}"; do
     if [[ "${#rule}" == 1 ]]; then
